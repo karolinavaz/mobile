@@ -16,10 +16,14 @@ import {
 
 import * as ImagePicker from "expo-image-picker";
 import { QRCode } from "@/components/qrcode";
+import { useBadgeStore } from "@/store/badge-store";
+import { Redirect } from "expo-router";
 
 export default function Ticket() {
   const [image, setImage] = useState("");
   const [expandQRCode, setExpandQRCode] = useState(false);
+
+  const badgeStore = useBadgeStore()
 
   async function handleSelectImage() {
     try {
@@ -39,6 +43,10 @@ export default function Ticket() {
     }
   }
 
+  if(!badgeStore.data?.checkInURL){
+    return <Redirect href="/" />
+  }
+
   return (
     <View className="flex-1 bg-green-500">
       <StatusBar barStyle="light-content" />
@@ -50,6 +58,7 @@ export default function Ticket() {
       >
         <Credential
           image={image}
+          data={badgeStore.data}
           onChangeAvatar={handleSelectImage}
           onExpandQRcode={() => setExpandQRCode(true)}
         />
@@ -71,7 +80,11 @@ export default function Ticket() {
 
         <Button title="Compartilhar" />
 
-        <TouchableOpacity activeOpacity={0.7} className="mt-10">
+        <TouchableOpacity 
+          activeOpacity={0.7} 
+          className="mt-10"
+          onPress={() => badgeStore.remove()}
+        >
           <Text className="text-base text-white font-bold text-center">
             Remover Ingresso
           </Text>

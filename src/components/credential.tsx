@@ -8,14 +8,16 @@ import {
   View,
 } from "react-native";
 import { QRCode } from "./qrcode";
+import { BadgeStore } from "@/store/badge-store";
 
 type Props = {
+  data: BadgeStore
   image?: string;
   onChangeAvatar?: () => void;
   onExpandQRcode?: () => void;
-};
+}
 
-export function Credential({ image, onChangeAvatar, onExpandQRcode }: Props) {
+export function Credential({ data, image, onChangeAvatar, onExpandQRcode }: Props) {
   return (
     <View className={"w-full self-stretch items-center"}>
       <Image
@@ -29,7 +31,9 @@ export function Credential({ image, onChangeAvatar, onExpandQRcode }: Props) {
           className="px-6 py-8 h-40 items-center self-stretch border-b border-white/10 overflow-hidden"
         >
           <View className="w-full flex-row items-center justify-between">
-            <Text className="text-zinc-50 text-sm font-bold">Unite summit</Text>
+            <Text className="text-zinc-50 text-sm font-bold">
+            {data.eventTitle}
+            </Text>
             <Text className="text-zinc-50 text-sm font-bold">#123</Text>
           </View>
 
