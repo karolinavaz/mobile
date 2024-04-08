@@ -1,29 +1,46 @@
-import { Button } from "@/components/button";
-import { Credential } from "@/components/credential";
-import { Header } from "@/components/header";
-import { colors } from "@/styles/colors";
-import { FontAwesome } from "@expo/vector-icons";
 import { useState } from "react";
+
 import {
   Alert,
   Modal,
+  Share,
   ScrollView,
   StatusBar,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
-
+import { MotiView } from "moti";
+import { FontAwesome } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
-import { QRCode } from "@/components/qrcode";
-import { useBadgeStore } from "@/store/badge-store";
 import { Redirect } from "expo-router";
 
+import { colors } from "@/styles/colors";
+
+import { useBadgeStore } from "@/store/badge-store";
+
+import { QRCode } from "@/components/qrcode";
+import { Button } from "@/components/button";
+import { Credential } from "@/components/credential";
+import { Header } from "@/components/header";
+
 export default function Ticket() {
-  const [image, setImage] = useState("");
   const [expandQRCode, setExpandQRCode] = useState(false);
 
-  const badgeStore = useBadgeStore()
+  const badgeStore = useBadgeStore();
+
+  async function handleShare() {
+    try {
+      if (badgeStore.data?.checkInURL) {
+        await Share.share({
+          message: badgeStore.data?.checkInURL,
+        });
+      }
+    } catch (error) {
+      console.log(error);
+      Alert.alert("Compartilhar", "Não foi possível compartilhar.");
+    }
+  }
 
   async function handleSelectImage() {
     try {
@@ -35,7 +52,7 @@ export default function Ticket() {
 
       if (result.assets) {
         console.log("result.assets", result.assets);
-        setImage(result.assets[0].uri);
+        badgeStore.updateAvatar(result.assets[0].uri);
       }
     } catch (error) {
       console.log(error);
@@ -43,8 +60,8 @@ export default function Ticket() {
     }
   }
 
-  if(!badgeStore.data?.checkInURL){
-    return <Redirect href="/" />
+  if (!badgeStore.data?.checkInURL) {
+    return <Redirect href="/" />;
   }
 
   return (
@@ -57,31 +74,45 @@ export default function Ticket() {
         showsVerticalScrollIndicator={false}
       >
         <Credential
-          image={image}
           data={badgeStore.data}
           onChangeAvatar={handleSelectImage}
           onExpandQRcode={() => setExpandQRCode(true)}
         />
 
-        <FontAwesome
-          name="angle-double-down"
-          size={24}
-          color={colors.gray[300]}
-          className="self-center my-6"
-        />
+        <MotiView
+          from={{
+            translateY: 0,
+          }}
+          animate={{
+            translateY: 10,
+          }}
+          transition={{
+            loop: true,
+            type: "timing",
+            duration: 700
+          }}
+        >
+          <FontAwesome
+            name="angle-double-down"
+            size={24}
+            color={colors.gray[300]}
+            className="self-center my-6"
+          />
+        </MotiView>
 
         <Text className="text-white font-bold text-2xl mt-4">
           Compartilhar credencial
         </Text>
 
         <Text className="text-white font-regular text-base mt-1 mb-6">
-          Mostra ao mundo que você vai participar do Unite Summit!
+          Mostra ao mundo que você vai participar do evento{" "}
+          {badgeStore.data.eventTitle}!
         </Text>
 
-        <Button title="Compartilhar" />
+        <Button title="Compartilhar" onPress={handleShare} />
 
-        <TouchableOpacity 
-          activeOpacity={0.7} 
+        <TouchableOpacity
+          activeOpacity={0.7}
           className="mt-10"
           onPress={() => badgeStore.remove()}
         >
@@ -93,7 +124,10 @@ export default function Ticket() {
 
       <Modal visible={expandQRCode} statusBarTranslucent>
         <View className="flex-1 bg-green-500 items-center justify-center">
-          <TouchableOpacity activeOpacity={0.7} onPress={() => setExpandQRCode(false)}>
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => setExpandQRCode(false)}
+          >
             <QRCode value="teste" size={300} />
             <Text className="font-body text-orange-500 text-sm mt-10 text-center">
               Fechar QRCode
